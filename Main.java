@@ -113,8 +113,8 @@ class Main {
     Score[] board = record.getScoreBoard();
     Score[] topTen;
     
-    if (board.length >= 10) {
-      topTen = new Score[10];
+    if (board.length >= 5) {
+      topTen = new Score[5];
     } else {
       topTen = new Score[board.length];
     }
@@ -135,7 +135,7 @@ class Main {
       }
     }
 
-    if (place >= 10) {
+    if (place >= topTen.length) {
       System.out.println("...");
       System.out.println(ESC + BG_YELLOW + ESC + FG_BLACK + ESC + BOLD + "[" + (place + 1) + "] " + score.toString() + ESC + RESET);
     }
