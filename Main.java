@@ -56,7 +56,10 @@ class Main {
 
       while (!game.hasFallen()) {
         replay.add(game.toString());
-        game.takeTurn(getMove());
+        int move = getMove();
+        if (move != 0) {
+          game.takeTurn();
+        }
       }
 
       replay.add(game.toString());
@@ -113,6 +116,7 @@ class Main {
 
       if (input.equalsIgnoreCase("help")) {
         displayHelp("move");
+        return 0;
       } else {
         try {
           move = Integer.parseInt(input);
