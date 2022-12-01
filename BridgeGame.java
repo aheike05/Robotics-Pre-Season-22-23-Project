@@ -27,7 +27,7 @@ public class BridgeGame {
 
   public void takeTurn(int move) {
     moves[1] = moves[0];
-    moves[0] = move;
+    moves[0] = Math.abs(move);
 
     turns++;
 
@@ -44,7 +44,7 @@ public class BridgeGame {
   }
 
   public boolean isMoveValid(int move) {
-    return move > 0 && move <= 3 && (move != moves[0] || move != moves[1]);
+    return move > 0 && move <= 3 && !(move == moves[0] && moves[0] == moves[1]);
   }
 
   private int getPlayerIndex() {
