@@ -2,6 +2,7 @@ import java.util.Scanner;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 import java.util.Random;
+import java.util.ArrayList;
 
 class Main {
   private static Scanner scan;
@@ -12,12 +13,15 @@ class Main {
   private static String playerReg;
   private static Random rng;
   private static Score score;
+  private static ArrayList<String> replay;
 
   public static final String ESC = "\u001B[";
   public static final String RESET = "0m";
   public static final String FG_RED = "31m";
   public static final String FG_BLACK = "30m";
   public static final String BG_YELLOW = "43m";
+  public static final String BG_BLUE = "44m";
+  public static final String FG_WHITE = "37m";
   public static final String BOLD = "1m";
   
   public static void main(String[] args) {
@@ -34,6 +38,8 @@ class Main {
 
     while (play) {
       game.init();
+
+      replay = new ArrayList<String>();
       
       player = "\u0000";
       while (!Pattern.matches(playerReg, player)) {
@@ -49,8 +55,11 @@ class Main {
       }
 
       while (!game.hasFallen()) {
+        replay.add(game.toString());
         game.takeTurn(getMove());
       }
+
+      replay.add(game.toString());
 
       int turns = game.getTurns();
       
@@ -61,26 +70,33 @@ class Main {
       System.out.println("You fell off the bridge, Sploosh!");
       System.out.println("You scored " + turns + "!");
 
-      displayScoreBoard();
-
-      String answer = "\u0000";
-
-      while (!answer.equalsIgnoreCase("yes") && !answer.equalsIgnoreCase("no")) {
-        if (!answer.equals("\u0000")) {
-          if (answer.equalsIgnoreCase("help")) {
-            displayHelp("again");
-          } else {
-            System.out.println(ESC + FG_RED + "Incorrect answer! Type 'help' for help." + ESC + RESET);
-          }
-        }
-        System.out.println("Play again?");
-        answer = scan.nextLine();
+      if (askYesOrNo("Show replay?", "replay")) {
+        displayReplay();
       }
 
-      play = answer.equalsIgnoreCase("yes");
+      displayScoreBoard();
+      
+      play = askYesOrNo("Play again?", "again");
     }
     
     record.writeScores();
+  }
+
+  private static boolean askYesOrNo(String prompt, String help) {
+    String answer = "\u0000";
+    
+    while (!answer.equalsIgnoreCase("yes") && !answer.equalsIgnoreCase("no")) {
+      if (!answer.equals("\u0000")) {
+        if (answer.equalsIgnoreCase("help")) {
+          displayHelp(help);
+        } else {
+          System.out.println(ESC + FG_RED + "Incorrect answer! Type 'help' for help." + ESC + RESET);
+        }
+      }
+      System.out.println(prompt);
+      answer = scan.nextLine();
+    }
+    return answer.equalsIgnoreCase("yes");
   }
 
   private static int getMove() {
@@ -104,6 +120,10 @@ class Main {
           System.out.println(ESC + FG_RED + "Not a proper number! Type 'help' for help." + ESC + RESET);
         }
       }
+    }
+
+    if (rng.nextBoolean()) {
+      move = -move;
     }
 
     return move;
@@ -141,6 +161,17 @@ class Main {
     }
   }
 
+  private static void displayReplay() {
+    System.out.printf("%6s\n", "Replay:");
+    for (String s : replay) {
+      System.out.printf("%5s\n", ESC + BG_BLUE + ESC + FG_BLACK + s + ESC + RESET);
+    }
+  }
+
+  private static void decryptReplay() {
+    
+  }
+
   private static void displayHelp(String context) {
     switch (context) {
       case "name":
@@ -163,6 +194,13 @@ class Main {
         System.out.println("Answer 'yes' or 'no'.");
         System.out.println("If you answer yes, the game will completely reset and ask for a player name again.");
         System.out.println("If you answer no, the game will record all the scores and exit.");
+        System.out.print(ESC + RESET);
+        break;
+      case "replay":
+        System.out.print(ESC + BOLD);
+        System.out.println("Answer 'yes' or 'no'.");
+        System.out.println("If you answer yes, a visual replay of your moves will be shown.");
+        System.out.println("If you answer no, you will not be shown your replay.");
         System.out.print(ESC + RESET);
         break;
       default:

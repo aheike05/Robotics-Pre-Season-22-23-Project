@@ -1,6 +1,0 @@
-AMH:8
-AMH:3
-AMH:2
-AMH:4
-AMH:16
-AMH:22

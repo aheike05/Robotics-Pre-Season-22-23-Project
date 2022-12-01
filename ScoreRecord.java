@@ -1,8 +1,11 @@
-import java.util.Scanner;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.util.Arrays;
+import java.security.MessageDigest;
 
 public class ScoreRecord {
 
@@ -13,7 +16,6 @@ public class ScoreRecord {
     source = new File(path);
     try {
       source.createNewFile();
-      
     } catch (Exception e) {
       System.out.println(Main.ESC + Main.FG_RED + "Can't create missing score file!" + Main.ESC + Main.RESET);
     }
@@ -21,18 +23,36 @@ public class ScoreRecord {
   }
 
   public void readScores() {
-    try {
-      Scanner scan = new Scanner(source);
-      while (scan.hasNextLine()) {
-        String scoreString = scan.nextLine();
+    try (BufferedInputStream read = new BufferedInputStream(new FileInputStream(source))) {
+      MessageDigest md5;
+      byte[] buf = new byte[read.available()];
+      if (buf.length > 16) {
+        for (int i = 0; i < buf.length; i++) {
+          read.read(buf, 0, buf.length);
+        }
+        String scoreString = new String(Arrays.copyOfRange(buf, 0, buf.length - 16));
+        md5 = MessageDigest.getInstance("MD5");
+        md5.update(scoreString.getBytes());
+        byte[] expected = md5.digest();
+        byte[] given = Arrays.copyOfRange(buf, buf.length - 16, buf.length);
 
-        String[] pieces = scoreString.split(":");
+        if (!Arrays.equals(given, expected)) {
+          System.out.println(Main.ESC + Main.FG_RED + "You modified the scores, cheater!" + Main.ESC + Main.RESET);
+          resetScores(true);
+          System.exit(1);
+        }
         
-        String player = pieces[0];
-        int score = Integer.parseInt(pieces[1]);
-        scoreList.add(new Score(player, score));
+        String[] scoreStrings = scoreString.split(":");
+        for (String str : scoreStrings) {
+          String player = str.substring(0, 3);
+          int score = Integer.parseInt(str.substring(3));
+        
+          scoreList.add(new Score(player, score));
+        }
       }
+      read.close();
     } catch (Exception e) {
+      e.printStackTrace();
       System.out.println(Main.ESC + Main.FG_RED + "Can't read from score file!" + Main.ESC + Main.RESET);
     }
   }
@@ -41,18 +61,35 @@ public class ScoreRecord {
     scoreList.add(score);
   }
 
+  private void resetScores(boolean cheat) {
+    try (FileWriter writer = new FileWriter(source, false)) {
+      writer.write("");
+    } catch (Exception e) {
+      System.out.print(Main.ESC + Main.FG_RED + "Failed to reset scores!");
+      if (cheat) {
+        System.out.print(" Lucky you, cheater.");
+      }
+
+      System.out.println(Main.ESC + Main.RESET);
+    }
+  }
+
   public void writeScores() {
     String scoresString = "";
     for (Score score : scoreList) {
-      scoresString += score.getPlayer() + ":" + score.getScore() + "\n";
+      scoresString += score.getPlayer() + score.getScore() + ":";
     }
-    
-    try {
-      FileWriter writer = new FileWriter(source, false);
+    try (FileWriter writer = new FileWriter(source, false)) {
       writer.write(scoresString);
+      MessageDigest md5 = MessageDigest.getInstance("MD5");
+      md5.update(scoresString.getBytes());
       writer.close();
+      byte[] hash = md5.digest();
+      FileOutputStream byteWriter = new FileOutputStream(source, true);
+      byteWriter.write(hash);
+      byteWriter.close();
     } catch (Exception e) {
-      System.out.println(Main.ESC + Main.FG_RED + "Failed to record scores!" + Main.ESC + Main.RESET);
+      System.out.println(Main.ESC + Main.FG_RED + "Failed to write scores!" + Main.ESC + Main.RESET);
     }
   }
 

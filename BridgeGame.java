@@ -31,10 +31,6 @@ public class BridgeGame {
 
     turns++;
 
-    if (rng.nextBoolean()) {
-      move = -move;
-    }
-
     int prevIndex = getPlayerIndex();
     int newIndex = prevIndex + move;
     
