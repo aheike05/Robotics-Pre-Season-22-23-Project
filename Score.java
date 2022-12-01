@@ -25,6 +25,6 @@ public class Score implements Comparable<Score> {
   }
 
   public String toString() {
-    return player + " - " + score;
+    return String.format("%s - %03d", player, score);
   }
 }

@@ -129,15 +129,15 @@ class Main {
       
     for (int i = 0; i < topTen.length; i++) {
       if (topTen[i].getPlayer().equals(player)) {
-        System.out.println(ESC + BG_YELLOW + ESC + FG_BLACK + ESC + BOLD + "[" + (i+1) + "] " + topTen[i].toString() + ESC + RESET);
+        System.out.printf("%s%-5s %s\n", ESC + BG_YELLOW + ESC + FG_BLACK + ESC + BOLD, "[" + (i + 1) + "]", topTen[i].toString() + ESC + RESET);
       } else {
-        System.out.println("[" + (i+1) + "] " + topTen[i].toString());
+        System.out.printf("%-5s %s\n", "[" + (i + 1) + "]", topTen[i].toString());
       }
     }
 
     if (place >= topTen.length) {
       System.out.println("...");
-      System.out.println(ESC + BG_YELLOW + ESC + FG_BLACK + ESC + BOLD + "[" + (place + 1) + "] " + score.toString() + ESC + RESET);
+      System.out.printf("%s%-5s %s\n", ESC + BG_YELLOW + ESC + FG_BLACK + ESC + BOLD, "[" + (place + 1) + "]", score.toString() + ESC + RESET);
     }
   }
 
