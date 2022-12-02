@@ -58,7 +58,7 @@ class Main {
         replay.add(game.toString());
         int move = getMove();
         if (move != 0) {
-          game.takeTurn();
+          game.takeTurn(move);
         }
       }
 
@@ -80,9 +80,8 @@ class Main {
       displayScoreBoard();
       
       play = askYesOrNo("Play again?", "again");
+      record.writeScores();
     }
-    
-    record.writeScores();
   }
 
   private static boolean askYesOrNo(String prompt, String help) {
@@ -170,10 +169,6 @@ class Main {
     for (String s : replay) {
       System.out.printf("%5s\n", ESC + BG_BLUE + ESC + FG_BLACK + s + ESC + RESET);
     }
-  }
-
-  private static void decryptReplay() {
-    
   }
 
   private static void displayHelp(String context) {

@@ -1,8 +1,8 @@
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.security.MessageDigest;
@@ -10,7 +10,7 @@ import java.security.MessageDigest;
 public class ScoreRecord {
 
   private File source;
-  private ArrayList<Score> scoreList;
+  private HashSet<Score> scoreList;
   
   public ScoreRecord(String path) {
     source = new File(path);
@@ -19,7 +19,7 @@ public class ScoreRecord {
     } catch (Exception e) {
       System.out.println(Main.ESC + Main.FG_RED + "Can't create missing score file!" + Main.ESC + Main.RESET);
     }
-    scoreList = new ArrayList<Score>();
+    scoreList = new HashSet<Score>();
   }
 
   public void readScores() {
@@ -42,10 +42,14 @@ public class ScoreRecord {
           System.exit(1);
         }
         
-        String[] scoreStrings = scoreString.split(":");
-        for (String str : scoreStrings) {
-          String player = str.substring(0, 3);
-          int score = Integer.parseInt(str.substring(3));
+        String[] split1 = scoreString.split(";");
+        String[] players = split1[0].split("\\.");
+        String[] scores = split1[1].split(":");
+        for (String str : scores) {
+          String[] split2 = str.split("\\.");
+          int playerIndex = Integer.parseInt(split2[0]);
+          String player = players[playerIndex];
+          int score = Integer.parseInt(split2[1]);
         
           scoreList.add(new Score(player, score));
         }
@@ -62,8 +66,8 @@ public class ScoreRecord {
   }
 
   private void resetScores(boolean cheat) {
-    try (FileWriter writer = new FileWriter(source, false)) {
-      writer.write("");
+    try (BufferedOutputStream write = new BufferedOutputStream(new FileOutputStream(source))) {
+      write.write(new byte[0], 0, 0);
     } catch (Exception e) {
       System.out.print(Main.ESC + Main.FG_RED + "Failed to reset scores!");
       if (cheat) {
@@ -75,26 +79,31 @@ public class ScoreRecord {
   }
 
   public void writeScores() {
-    String scoresString = "";
-    for (Score score : scoreList) {
-      scoresString += score.getPlayer() + score.getScore() + ":";
+    String str = "";
+    String[] players = getPlayers();
+    for (String player : players) {
+      str += player + ".";
     }
-    try (FileWriter writer = new FileWriter(source, false)) {
-      writer.write(scoresString);
+    str += ";";
+    for (Score score : scoreList) {
+      int idx;
+      for (idx = 0; idx < players.length && !players[idx].equals(score.getPlayer()); idx++);
+      str += idx + "." + score.getScore() + ":";
+    }
+    try (BufferedOutputStream write = new BufferedOutputStream(new FileOutputStream(source))) {
+      write.write(str.getBytes(), 0, str.length());
       MessageDigest md5 = MessageDigest.getInstance("MD5");
-      md5.update(scoresString.getBytes());
-      writer.close();
+      md5.update(str.getBytes());
       byte[] hash = md5.digest();
-      FileOutputStream byteWriter = new FileOutputStream(source, true);
-      byteWriter.write(hash);
-      byteWriter.close();
+      write.write(hash, 0, hash.length);
+      write.close();
     } catch (Exception e) {
       System.out.println(Main.ESC + Main.FG_RED + "Failed to write scores!" + Main.ESC + Main.RESET);
     }
   }
 
   public String[] getPlayers() {
-    ArrayList<String> players = new ArrayList<String>();
+    HashSet<String> players = new HashSet<String>();
 
     for (Score score : scoreList) {
       if (!players.contains(score.getPlayer())) {
@@ -106,7 +115,7 @@ public class ScoreRecord {
   }
 
   public Score[] getScores(String player) {
-    ArrayList<Score> scores = new ArrayList<Score>();
+    HashSet<Score> scores = new HashSet<Score>();
 
     for (Score score : scoreList) {
       if (score.getPlayer().equals(player.toUpperCase())) {
@@ -118,7 +127,7 @@ public class ScoreRecord {
   }
 
   public Score getHighScore() {
-    Score highScore = scoreList.get(0);
+    Score highScore = new Score("NUL", 0);
     for (Score score : scoreList) {
       if (score.getScore() >= highScore.getScore()) {
         highScore = score;

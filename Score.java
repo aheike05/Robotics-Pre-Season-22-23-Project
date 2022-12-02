@@ -20,10 +20,6 @@ public class Score implements Comparable<Score> {
     return other.getScore() - score;
   }
 
-  public boolean equals(Score other) {
-    return score == other.getScore() && player == other.getPlayer();
-  }
-
   public String toString() {
     return String.format("%s - %03d", player, score);
   }
