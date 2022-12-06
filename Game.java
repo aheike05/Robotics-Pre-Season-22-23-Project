@@ -2,17 +2,27 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 
+/**
+This is where the game logic actually happens.
+**/
 public class Game {
   private ArrayList<String> replay;
   private Bridge bridge;
   private Scanner scan;
 
+  /**
+Do any setting of variables, like creating a new bridge, scanner, or storage for replay.
+  **/
   public Game() {
     replay = new ArrayList<String>();
     bridge = new Bridge(9);
     scan = new Scanner(System.in);
   }
 
+  /**
+Play an entire game, at the end print the turns survived, then print the replay.
+At the end return the number of turns survived.
+  **/
   public int play() {
     int turns = 0;
 
@@ -54,6 +64,9 @@ public class Game {
     return turns;
   }
 
+  /**
+Print the replay.
+  **/
   private void displayReplay() {
     for (int i = 0; i < replay.size(); i++) {
       System.out.println(replay.get(i));
