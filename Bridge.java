@@ -24,18 +24,19 @@ public class Bridge {
     return -1;
   }
 
-  public boolean move(int amnt) {
+  public boolean move(int len) {
     int pos = getPosition();
-    int newPos = pos + amnt;
+    int newPos = pos + len;
 
     bridge[pos] = '_';
     
-    if (newPos >= 0 && newPos < bridge.length) {
-      bridge[newPos] = '#';
-      return true;
+    if (newPos < 0 || newPos >= bridge.length) {
+      return false;
     }
 
-    return false;
+    bridge[newPos] = '#';
+
+    return true;
   }
 
   public String toString() {
